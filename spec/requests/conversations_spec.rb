@@ -42,28 +42,6 @@ RSpec.describe "Conversations API", type: :request do
       end
 
       it "returns status code 200 with correct response" do
-        expected_json = {
-          data: [
-            {
-              id: Integer,
-              with_user: {
-                id: Integer,
-                name: String,
-                photo_url: String,
-              },
-              last_message: {
-                id: Integer,
-                sender: {
-                  id: Integer,
-                  name: String,
-                },
-                sent_at: String,
-              },
-              unread_count: Integer,
-            },
-          ],
-        }
-
         # Validate the response
         expect_response(:ok)
 
@@ -94,22 +72,28 @@ RSpec.describe "Conversations API", type: :request do
       end
 
       it "returns conversation detail" do
-        expect_response(
-          :ok,
-          data: {
+        expect_response(:ok)
+        expect(response_data).to match(
+          {
             id: Integer,
             with_user: {
               id: Integer,
               name: String,
               photo_url: String,
             },
-          },
+          }
         )
       end
     end
 
     context "when current user access other user conversation" do
-      before { get "/conversations/#{convo_id}", params: {}, headers: samid_headers }
+      before do
+        new_user = create(:user)
+        conversation = create(:conversation, user: dimas, with_user: new_user)
+        convo_id = conversation.id
+
+        get "/conversations/#{convo_id}", params: {}, headers: samid_headers
+      end
 
       it "returns status code 403" do
         expect(response).to have_http_status(403)
