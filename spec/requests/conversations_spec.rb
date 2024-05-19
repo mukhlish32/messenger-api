@@ -1,31 +1,39 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'Conversations API', type: :request do
+RSpec.describe "Conversations API", type: :request do
   let(:dimas) { create(:user) }
-  let(:dimas_headers) { valid_headers(dimas) }
+  let(:dimas_headers) { valid_headers(dimas.id) }
 
   let(:samid) { create(:user) }
-  let(:samid_headers) { valid_headers(samid) }
+  let(:samid_headers) { valid_headers(samid.id) }
 
-  describe 'GET /conversations' do
-    context 'when user have no conversation' do
+  describe "GET /conversations" do
+    context "when user have no conversation" do
       # make HTTP get request before each example
-      before { get '/conversations', params: {}, headers: dimas_headers }
+      before {
+        get "/conversations", params: {}, headers: dimas_headers
+      }
 
-      it 'returns empty data with 200 code' do
-        expect_response(
-          :ok,
-          data: []
-        )
+      it "returns empty data with 200 code" do
+        expect_response(:ok)
+        expect(response_data).to be_empty
       end
     end
 
-    context 'when user have conversations' do
+    context "when user have conversations" do
       # TODOS: Populate database with conversation of current user
+      before do
+        (0..4).each do |i|
+          # Create conversation & message by dimas
+          new_user = create(:user)
+          conversation = create(:conversation, user: dimas, with_user: new_user)
+          create(:chat_message, conversation: conversation, sender: dimas)
+        end
 
-      before { get '/conversations', params: {}, headers: dimas_headers }
+        get "/conversations", params: {}, headers: dimas_headers
+      end
 
-      it 'returns list conversations of current user' do
+      it "returns list conversations of current user" do
         # Note `response_data` is a custom helper
         # to get data from parsed JSON responses in spec/support/request_spec_helper.rb
 
@@ -33,7 +41,7 @@ RSpec.describe 'Conversations API', type: :request do
         expect(response_data.size).to eq(5)
       end
 
-      it 'returns status code 200 with correct response' do
+      it "returns status code 200 with correct response" do
         expect_response(
           :ok,
           data: [
@@ -42,30 +50,30 @@ RSpec.describe 'Conversations API', type: :request do
               with_user: {
                 id: Integer,
                 name: String,
-                photo_url: String
+                photo_url: String,
               },
               last_message: {
                 id: Integer,
                 sender: {
                   id: Integer,
-                  name: String
+                  name: String,
                 },
-                sent_at: String
+                sent_at: String,
               },
-              unread_count: Integer
-            }
-          ]
+              unread_count: Integer,
+            },
+          ],
         )
       end
     end
   end
 
-  describe 'GET /conversations/:id' do
-    context 'when the record exists' do
+  describe "GET /conversations/:id" do
+    context "when the record exists" do
       # TODO: create conversation of dimas
       before { get "/conversations/#{convo_id}", params: {}, headers: dimas_headers }
 
-      it 'returns conversation detail' do
+      it "returns conversation detail" do
         expect_response(
           :ok,
           data: {
@@ -73,25 +81,25 @@ RSpec.describe 'Conversations API', type: :request do
             with_user: {
               id: Integer,
               name: String,
-              photo_url: String
-            }
-          }
+              photo_url: String,
+            },
+          },
         )
       end
     end
 
-    context 'when current user access other user conversation' do
+    context "when current user access other user conversation" do
       before { get "/conversations/#{convo_id}", params: {}, headers: samid_headers }
 
-      it 'returns status code 403' do
+      it "returns status code 403" do
         expect(response).to have_http_status(403)
       end
     end
 
-    context 'when the record does not exist' do
+    context "when the record does not exist" do
       before { get "/conversations/-11", params: {}, headers: dimas_headers }
 
-      it 'returns status code 404' do
+      it "returns status code 404" do
         expect(response).to have_http_status(404)
       end
     end
