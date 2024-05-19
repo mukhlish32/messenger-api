@@ -23,7 +23,7 @@ RSpec.describe "Conversations API", type: :request do
     context "when user have conversations" do
       # TODOS: Populate database with conversation of current user
       before do
-        (0..4).each do |i|
+        (1..5).each do |i|
           # Create conversation & message by dimas
           new_user = create(:user)
           conversation = create(:conversation, user: dimas, with_user: new_user)
@@ -42,8 +42,7 @@ RSpec.describe "Conversations API", type: :request do
       end
 
       it "returns status code 200 with correct response" do
-        expect_response(
-          :ok,
+        expected_json = {
           data: [
             {
               id: Integer,
@@ -63,7 +62,23 @@ RSpec.describe "Conversations API", type: :request do
               unread_count: Integer,
             },
           ],
-        )
+        }
+
+        # Validate the response
+        expect_response(:ok)
+
+        # Validate individual items in the response data
+        response_data.each_with_index do |item, index|
+          expect(item[:id]).to be_a(Integer)
+          expect(item[:with_user][:id]).to be_a(Integer)
+          expect(item[:with_user][:name]).to be_a(String)
+          expect(item[:with_user][:photo_url]).to be_a(String)
+          expect(item[:last_message][:id]).to be_a(Integer)
+          expect(item[:last_message][:sender][:id]).to be_a(Integer)
+          expect(item[:last_message][:sender][:name]).to be_a(String)
+          expect(item[:last_message][:sent_at]).to be_a(String)
+          expect(item[:unread_count]).to be_a(Integer)
+        end
       end
     end
   end
@@ -71,7 +86,12 @@ RSpec.describe "Conversations API", type: :request do
   describe "GET /conversations/:id" do
     context "when the record exists" do
       # TODO: create conversation of dimas
-      before { get "/conversations/#{convo_id}", params: {}, headers: dimas_headers }
+      before do
+        conversation = create(:conversation, user: dimas, with_user: samid)
+        convo_id = conversation.id
+
+        get "/conversations/#{convo_id}", params: {}, headers: dimas_headers
+      end
 
       it "returns conversation detail" do
         expect_response(
