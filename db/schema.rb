@@ -10,10 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_01_30_224323) do
+ActiveRecord::Schema.define(version: 2024_05_19_044614) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "chat_messages", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.bigint "sender_id", null: false
+    t.text "message"
+    t.datetime "read_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["conversation_id"], name: "index_chat_messages_on_conversation_id"
+    t.index ["sender_id"], name: "index_chat_messages_on_sender_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "with_user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id", "with_user_id"], name: "index_conversations_on_user_id_and_with_user_id", unique: true
+    t.index ["user_id"], name: "index_conversations_on_user_id"
+    t.index ["with_user_id"], name: "index_conversations_on_with_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "name"
@@ -24,4 +45,8 @@ ActiveRecord::Schema.define(version: 2023_01_30_224323) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "chat_messages", "conversations"
+  add_foreign_key "chat_messages", "users", column: "sender_id"
+  add_foreign_key "conversations", "users"
+  add_foreign_key "conversations", "users", column: "with_user_id"
 end
