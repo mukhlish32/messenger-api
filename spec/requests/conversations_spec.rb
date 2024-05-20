@@ -42,21 +42,25 @@ RSpec.describe "Conversations API", type: :request do
       end
 
       it "returns status code 200 with correct response" do
-        # Validate the response
-        expect_response(:ok)
-
         # Validate individual items in the response data
-        response_data.each_with_index do |item, index|
-          expect(item[:id]).to be_a(Integer)
-          expect(item[:with_user][:id]).to be_a(Integer)
-          expect(item[:with_user][:name]).to be_a(String)
-          expect(item[:with_user][:photo_url]).to be_a(String)
-          expect(item[:last_message][:id]).to be_a(Integer)
-          expect(item[:last_message][:sender][:id]).to be_a(Integer)
-          expect(item[:last_message][:sender][:name]).to be_a(String)
-          expect(item[:last_message][:sent_at]).to be_a(String)
-          expect(item[:unread_count]).to be_a(Integer)
-        end
+        expect_response(:ok)
+        expect(response_data[0]).to match(
+          id: Integer,
+          with_user: {
+            id: Integer,
+            name: String,
+            photo_url: String,
+          },
+          last_message: {
+            id: Integer,
+            sender: {
+              id: Integer,
+              name: String,
+            },
+            sent_at: String,
+          },
+          unread_count: Integer,
+        )
       end
     end
   end
