@@ -30,6 +30,7 @@ class MessagesController < ApplicationController
   # GET /messages/:id
   def show
     authorize_conversation_access
+    update_message_read_at
     json_response(MessageSerializer.new(@message).as_json)
   end
 
@@ -53,29 +54,15 @@ class MessagesController < ApplicationController
     end
   end
 
+  def update_message_read_at
+    return if @message.read_at.present?
+
+    @message.update!(read_at: Time.zone.now)
+  end
+
   def set_message
     @message = @conversation.chat_messages.find(params[:id])
   rescue ActiveRecord::RecordNotFound => e
     json_response({ message: e.message }, :not_found)
-  end
-
-  def saved_format_message(message)
-    {
-      id: message.id,
-      message: message.message,
-      sender: {
-        id: message.sender_id,
-        name: message.sender.name,
-      },
-      sent_at: message.created_at.strftime("%Y-%m-%d %H:%M:%S"), # Example format, adjust as needed
-      conversation: {
-        id: message.conversation.id,
-        with_user: {
-          id: message.conversation.with_user.id,
-          name: message.conversation.with_user.name,
-          photo_url: message.conversation.with_user.photo_url,
-        },
-      },
-    }
   end
 end
