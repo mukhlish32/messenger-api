@@ -14,10 +14,8 @@ class ConversationSerializer
       },
     }
 
-    if @include_details
-      json[:last_message] = last_message_info
-      json[:unread_count] = unread_message_count
-    end
+    json[:last_message] = last_message_info if @include_details
+    json[:unread_count] = unread_message_count if @include_details
 
     json
   end
@@ -33,6 +31,7 @@ class ConversationSerializer
       sender: {
         id: last_message.sender.id,
         name: last_message.sender.name,
+        photo_url: last_message.sender.photo_url,
       },
       sent_at: last_message.created_at.iso8601,
     }
