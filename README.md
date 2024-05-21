@@ -55,10 +55,11 @@ A simple messaging API built with Ruby on Rails that allows users to create and 
 ### Conversations
 - `GET /conversations` - Retrieves a list of conversations with the latest message and unread message count
 - `GET /conversations/:id` - Retrieves a specific conversation with detailed information
+- `POST /conversations` - Create a conversation between users
 ### Messages
 - `GET /conversations/:conversation_id/messages` - Retrieves messages for a specific conversation
-- `POST /messages` - Create and Send a message in a conversation
 - `GET /messages/:id` - Retrieves a specific message and updates its read status
+- `POST /messages` - Create and Send a message in a conversation
 
 ## Testing
 
